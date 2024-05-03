@@ -253,65 +253,100 @@
  <li><a href=""><i class="fab fa-twitter"></i></a></li>
  </ul>
  <span class="description">or use you email for registration:</span>
- <!-- <form class="form-horizontal"> -->
- <form class="form-horizontal" method="POST">
 
- <div class="form-group">
- <input type="text" class="form-control" placeholder="name" name="name">
- </div>
- <div class="form-group">
- <input type="email" class="form-control" placeholder="email" name="email">
- </div>
- <div class="form-group">
- <input type="password" class="form-control" placeholder="password" name="password">
- </div>
- <div class="form-group">
- <input type="checkbox" class="checkbox">
- <span class="check-label">I agree to the <a href="">Terms</a> and <a href="">Privacy Policy.</a></span>
- </div>
- <button class="btn signup dropup-center ">Sign up</button>
- </form>
- </div>
- </div>
-
- </div>
-</section>
-<?php 
+ <?php 
 
 define("SERVERNAME","localhost");
 define("DB_LOGIN","root");
 define("DB_PASSWORD","");
-define("DB_NAME","my_table");
+define("DB_NAME","registration");
 
-$conn = new mysqli(SERVERNAME, DB_LOGIN, DB_PASSWORD, DB_NAME);
+// $connect = new mysqli(SERVERNAME, DB_LOGIN, DB_PASSWORD, DB_NAME);
+// $sql = "INSERT INTO `account`(`name`, `emails`, `password`) VALUES ('Вікторія','viktoriya@mail.com','dfdghhjhjtj')";
+// if($connect->query($sql) === TRUE){
+// echo "Додано новий аккаунт!";
+// }else {
+//      echo "ВІДМІНА! Аккаунт не додано!";
+// }
+// $connect->close();
+$name=$email=$password='';
+$connect = new mysqli(SERVERNAME, DB_LOGIN, DB_PASSWORD, DB_NAME);
+$sql = "SELECT * FROM `account`";
+$result = $connect->query($sql);
+for ($user=array(); $row=$result->fetch_assoc(); $user[]=$row);
+// print_r($user);
+$connect->close();
 
+// добавление аккаунта
+if (isset($_POST['sing_up'])) {
+     $name = $_POST['name']??'0';
+     $email = $_POST['email'];
+     $password = $_POST['password'];
+     $connect = new mysqli(SERVERNAME, DB_LOGIN, DB_PASSWORD, DB_NAME);
+     $sql = "INSERT INTO `account`(`name`, `email`, `password`) VALUES ('$name','$email','$password')";
+     $connect->query($sql);
+     $connect->close();
 
-// Проверка соединения
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+}
+if (isset($_GET['change'])) {
+     $id = $_GET['id']??'0';
+     $name = $user[$id]['name']??'0';
+     $email = $user[$id]['email'];
+     $password = $user[$id]['password']??'';
+     $id_base = $user[$id]['id']??'';
+     $connect = new mysqli(SERVERNAME, DB_LOGIN, DB_PASSWORD, DB_NAME);
+     $sql = "INSERT INTO `account`(`name`, `email`, `password`) VALUES ('$name','$email','$password')";
+     $connect->query($sql);
+     $connect->close();
+
 }
 
-// Получение данных из формы регистрации
-$name = $_POST['name'];
-$email = $_POST['email'];
-$password = $_POST['password'];
-
-// Хэширование пароля
-$hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-// SQL-запрос для вставки данных в базу данных
-$sql = "INSERT INTO my_table (name, email, password) VALUES ('$name', '$email', '$hashed_password')";
-
-if ($conn->query($sql) === TRUE) {
-    echo "Registration successful!";
-} else {
-    echo "Error: " . $sql . "<br>" . $conn->error;
+if(isset($_POST['edit'])) {
+    $name = $_POST['name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $id_base = $_POST['id_base'] ?? ''; // Добавлено определение переменной $id_base
+    $connect = new mysqli(SERVERNAME, DB_LOGIN, DB_PASSWORD, DB_NAME);
+    $sql = "UPDATE `account` SET `name`='$name', `email`='$email', `password`='$password' WHERE `id`='$id_base'";
+    $connect->query($sql);
+    $connect->close();
 }
-
-// Закрытие соединения
-$conn->close();
 ?>
 
+<form action="#" class="form-horizontal" method="POST">
+    <div class="form-group">
+        <input type="text" class="form-control" placeholder="name" name="name" value="<?=$name?>">
+    </div>
+    <div class="form-group">
+        <input type="email" class="form-control" placeholder="email" name="email" value="<?=$email?>">
+    </div>
+    <div class="form-group">
+        <input type="password" class="form-control" placeholder="password" name="password" value="<?=$password?>">
+    </div>
+    <!-- Добавлено скрытое поле для передачи id_base -->
+    <input type="hidden" name="id_base" value="<?=$id_base?>">
+    <div class="form-group">
+        <input type="submit" class="form-control" name="edit" value="Редагувати">
+    </div>
+    <div class="form-group">
+        <input type="submit" class="form-control" name="delete" value="Видалити">
+    </div>
+</form>
+
+ </div>
+ </div>
+
+ </div>
+
+
+
+<?php
+foreach ($user as $k=>$v){
+     echo"<p>$v[id] | name: <strong>$v[name]</strong> | email: $v[email] | password: $v[password]<a href='? change=$k'>   Змінити</a> </p>";
+}
+
+?>
+</section>
   </main>
 
   <footer class="text-muted py-5">
